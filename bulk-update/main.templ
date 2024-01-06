@@ -1,0 +1,93 @@
+package main
+
+import "strconv"
+
+templ root(component templ.Component) {
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css"/>
+        <link rel="stylesheet" href="/static/index.css"/>
+        <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+        <title>Bulk Update</title>
+    </head>
+    <body>
+        @component
+    </body>
+    </html>
+}
+
+templ showError(err string, status string) {
+	<div>
+		Error { status } - { err }
+	</div>
+}
+
+templ loopUserWithIndicator(users *[]UserWithIndicator) {
+    for idx, user := range *users {
+        <tr 
+            if user.IsChanged && user.IsActive {
+                class="active"
+            } else if user.IsChanged && !user.IsActive {
+                class="deactive"
+            }
+        >
+            <td><input type="checkbox" name="ids" value={ strconv.Itoa(idx) } /></td>
+            <td>{ user.Name }</td>
+            <td>
+                if user.IsActive {
+                    Active
+                } else {
+                    Non Active
+                }
+            </td>
+        </tr>
+    }
+}
+
+templ loopUser(users *[]User) {
+    for idx, user := range *users {
+        <tr>
+            <td><input type="checkbox" name="ids" value={ strconv.Itoa(idx) } /></td>
+            <td>{ user.Name }</td>
+            <td>
+                if user.IsActive {
+                    Active
+                } else {
+                    Non Active
+                }
+            </td>
+        </tr>
+    }
+}
+
+templ userList(users *[]User) {
+    <form id="form">
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Name</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="tbody">
+                @loopUser(users)
+            </tbody>
+
+        </table>
+    </form>
+
+    <div hx-target="tbody" hx-include="form">
+        <a href="#" role="button" hx-put="/activate">
+            Activate
+        </a>
+        <a href="#" role="button" hx-put="/deactivate">
+            Deactivate
+        </a>
+    </div>
+}
+

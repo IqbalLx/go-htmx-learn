@@ -1,0 +1,17 @@
+body {
+  width: 80%;
+  margin: auto;
+}
+
+/*reference for .htmx-settling class: https://htmx.org/docs/#request-operations */
+.htmx-settling tr.active td {
+  background: deepskyblue;
+}
+
+.htmx-settling tr.deactive td {
+  background: lightcoral;
+}
+
+tr td {
+  transition: all 1.2s;
+}
