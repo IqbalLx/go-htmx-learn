@@ -1,0 +1,57 @@
+package main
+
+import "strconv"
+
+templ root(component templ.Component) {
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css"/>
+        <link rel="stylesheet" href="/static/index.css"/>
+        <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+        <title>Bulk Update</title>
+    </head>
+    <body>
+        @component
+    </body>
+    </html>
+}
+
+templ showError(err string, status string) {
+	<div>
+		Error { status } - { err }
+	</div>
+}
+
+templ showRows(users *[]User, nextPage int, morePages bool) {
+    for _, user := range *users {
+        <tr class="value">
+            <td>{ strconv.Itoa(user.ID) }</td>
+            <td>{ user.Name }</td>
+            <td>{ user.Email }</td>
+        </tr>
+    }
+
+    if morePages {
+        <tr hx-target="this" hx-swap="outerHTML">
+            <td colspan="3">
+                <button type="button" hx-get={ "/load-more/" + strconv.Itoa(nextPage) }>Load More Pages</button>
+            </td>
+        </tr>
+    }
+}
+
+templ showTable(users []User, nextPage int, morePages bool) {
+    <table>
+        <thead>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+        </thead>
+        <tbody>
+            @showRows(&users, nextPage, morePages)
+        </tbody>
+    </table>
+}

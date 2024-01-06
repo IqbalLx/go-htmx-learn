@@ -1,0 +1,13 @@
+body {
+  width: 80%;
+  margin: auto;
+}
+
+tr.value.htmx-added td {
+  opacity: 0;
+}
+
+tr td {
+  opacity: 1;
+  transition: all 600ms ease-out;
+}
