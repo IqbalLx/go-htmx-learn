@@ -1,0 +1,86 @@
+package main
+
+import "strconv"
+
+templ root(component templ.Component) {
+	<html>
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>Click To Edit</title>
+			<script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+		</head>
+		<body class="bg-gray-100">
+			@component
+		</body>
+	</html>
+}
+
+templ hello(name string) {
+	<div>
+		<p>Hello, { name }</p>
+	</div>
+}
+
+templ showUser(user User) {
+	<div hx-target="this" hx-swap="outerHTML">
+		<div>
+			<label>
+				First Name:
+			</label>
+			{ user.FirstName }
+		</div>
+
+		<div>
+			<label>
+				Last Name:
+			</label>
+			{ user.LastName }
+		</div>
+
+		<div>
+			<label>
+				Email:
+			</label>
+			{ user.Email }
+		</div>
+
+		<button hx-get={ "/user/edit/" + strconv.Itoa(user.ID) } class="btn btn-primary">
+			Click To Edit
+		</button>
+	</div>
+}
+
+templ updateUser(user User) {
+	<form hx-put={"/user/edit/" + strconv.Itoa(user.ID) } hx-target="this" hx-swap="outerHTML">
+		<div>
+			<label>
+				First Name
+			</label>
+			<input type="text" name="firstName" value={ user.FirstName }></input> 
+		</div>
+
+		<div>
+			<label>
+				Last Name
+			</label>
+			<input type="text" name="lastName" value={ user.LastName }></input> 
+		</div>
+
+		<div>
+			<label>
+				Email
+			</label>
+			<input type="text" name="email" value={ user.Email }></input> 
+		</div>
+
+		<button class="btn">Submit</button>
+		<button hx-get={ "/user/" + strconv.Itoa(user.ID) } class="btn">Cancel</button>
+	</form>
+}
+
+templ showError(err string, status string) {
+	<div>
+		Error { status } - { err }
+	</div>
+}
