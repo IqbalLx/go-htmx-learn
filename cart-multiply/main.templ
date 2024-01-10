@@ -1,0 +1,139 @@
+package main
+
+import (
+    "strconv"
+)
+
+templ root(component templ.Component) {
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="/static/index.css"/>
+        <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <title>Cart Multiply</title>
+    </head>
+    <body class="m-4">
+        @component
+    </body>
+    </html>
+}
+
+templ showError(err string, status string) {
+	<div>
+		Error { status } - { err }
+	</div>
+}
+
+script increaseQuantity(id int, step int) {
+    const inputElem = document.getElementById(`quantity-input-${id}`);
+    const spanElem = document.getElementById(`quantity-span-${id}`);
+
+    const quantity = parseInt(inputElem.value);
+    const newQuantity = quantity + step;
+
+    inputElem.value = newQuantity.toString();
+    spanElem.innerText = newQuantity % 1000 === 0 ? 
+        (newQuantity / 1000).toString() : 
+        (newQuantity / 1000).toFixed(2);
+}
+
+script decreaseQuantity(id int, step int) {
+    const inputElem = document.getElementById(`quantity-input-${id}`);
+    const spanElem = document.getElementById(`quantity-span-${id}`);
+
+    const quantity = parseInt(inputElem.value);
+    const newQuantity = Math.max(quantity - step, step);
+
+    inputElem.value = newQuantity;
+    spanElem.innerText = newQuantity % 1000 === 0 ? 
+        (newQuantity / 1000).toString() : 
+        (newQuantity / 1000).toFixed(2);
+}
+
+templ cartCounter(cart Cart) {
+  <div class="flex items-center border rounded-md border-gray-300 px-2" id={ "counter-" + strconv.Itoa(cart.ID) }>
+        <button
+        class="text-gray-600 focus:outline-none"
+        onclick={ decreaseQuantity(cart.ID, cart.Product.QtyMultiple) }
+        hx-patch="/cart"
+        hx-trigger="click delay:300ms"
+        hx-include={ "#form-input-" + strconv.Itoa(cart.ID) }
+        hx-target={ "#counter-" + strconv.Itoa(cart.ID) }
+        hx-swap="outerHTML"
+      >
+        -
+      </button>
+        <form id={ "form-input-" + strconv.Itoa(cart.ID) } style="display: none;">
+          <input 
+            id={ "quantity-input-" + strconv.Itoa(cart.ID) }  
+            name="quantity" value={ strconv.Itoa(cart.Quantity) } 
+          ></input>
+          <input  
+            name="cartId" value={ strconv.Itoa(cart.ID) } 
+          ></input>
+        </form>
+
+      <span 
+        class="mx-2" 
+        id={ "quantity-span-" + strconv.Itoa(cart.ID) }
+      >
+        { formatQuantity(cart.Quantity) }
+      </span>
+      <button
+        class="text-gray-600 focus:outline-none"
+        onclick={ increaseQuantity(cart.ID, cart.Product.QtyMultiple) }
+        hx-patch="/cart"
+        hx-trigger="click delay:300ms"
+        hx-include={ "#form-input-" + strconv.Itoa(cart.ID) }
+        hx-target={ "#counter-" + strconv.Itoa(cart.ID) }
+        hx-swap="outerHTML"
+      >
+        +
+      </button>
+      
+    </div>
+}
+
+templ cartDetail(cart Cart) {
+    <div
+      class="bg-white rounded-lg shadow-md p-4 flex justify-between items-center mb-4"
+    >
+      <div class="flex items-center">
+        <div>
+          <h3 class="text-lg font-semibold">{ cart.Product.Name }</h3>
+          <p class="text-gray-600">{ formatPrice(cart.Product.Price) }</p>
+        </div>
+      </div>
+      <div class="flex items-center">
+        @cartCounter(cart)
+        <button class="bg-red-500 text-white px-4 py-2 rounded-md ml-4">
+          Remove
+        </button>
+      </div>
+    </div>
+}
+
+templ cartTotal(total int) {
+  <div 
+    class="flex flex-col items-center bg-white rounded-lg shadow-md p-4 mb-4"
+    hx-trigger="totalUpdate from:body"
+    hx-get="/cart/total"
+    hx-swap="outerHTML"
+  >
+      <h1 class="text-lg font-semibold mb-2">Total Price:</h1>
+      <p class="text-gray-600">{ formatPrice(total) }</p>
+  </div>
+}
+
+templ cartList(carts []Cart, total int) {
+    <div class="flex-col items-center">
+        for _, cart := range carts {
+            @cartDetail(cart)
+        }
+    </div>
+
+    @cartTotal(total)
+}
